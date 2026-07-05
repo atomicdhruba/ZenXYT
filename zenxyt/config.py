@@ -22,7 +22,7 @@ class Config:
 
     # ── GOOGLE GEMINI API ───────────────────────────────
     GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-1.5-pro")
+    GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
 
     # ── YOUTUBE AUTH ────────────────────────────────────
     CLIENT_SECRETS: str = os.environ.get("GOOGLE_CLIENT_SECRETS_PATH", "client_secrets.json")

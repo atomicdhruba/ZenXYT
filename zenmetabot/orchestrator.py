@@ -2,15 +2,15 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 
-from zenxyt.config import CFG, log
-from zenxyt.models import VideoMeta
-from zenxyt.youtube import get_youtube_client
-from zenxyt.downloader import download_video
-from zenxyt.brain import extract_brain
-from zenxyt.ai_nvidia import generate_metadata_nvidia
-from zenxyt.ai_gemini import generate_metadata_gemini
-from zenxyt.debate import run_debate, get_seo_score
-from zenxyt.progress import progress
+from zenmetabot.config import CFG, log
+from zenmetabot.models import VideoMeta
+from zenmetabot.youtube import get_youtube_client
+from zenmetabot.downloader import download_video
+from zenmetabot.brain import extract_brain
+from zenmetabot.ai_nvidia import generate_metadata_nvidia
+from zenmetabot.ai_gemini import generate_metadata_gemini
+from zenmetabot.debate import run_debate, get_seo_score
+from zenmetabot.progress import progress
 
 def process_single_video(
     video: VideoMeta, 

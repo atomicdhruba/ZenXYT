@@ -2,12 +2,12 @@ import sys
 import argparse
 
 def run_cli():
-    from zenxyt.config import CFG, log
-    from zenxyt.youtube import get_youtube_client
-    from zenxyt.orchestrator import process_single_video
+    from zenmetabot.config import CFG, log
+    from zenmetabot.youtube import get_youtube_client
+    from zenmetabot.orchestrator import process_single_video
 
     print(f"\n{'─'*60}")
-    print(f"  ZenXYT Bot v2.0  —  CLI Mode")
+    print(f"  Zen MetaBot Bot v2.0  —  CLI Mode")
     print(f"{'─'*60}")
 
     if not CFG.NVIDIA_API_KEY and not CFG.GEMINI_API_KEY:
@@ -45,12 +45,12 @@ def run_cli():
     print(f"{'─'*60}\n")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ZenXYT Video Intelligence Bot")
+    parser = argparse.ArgumentParser(description="Zen MetaBot Video Intelligence Bot")
     parser.add_argument("--cli", action="store_true", help="Run in Command Line mode without GUI")
     args = parser.parse_args()
 
     if args.cli:
         run_cli()
     else:
-        from zenxyt.gui import launch_gui
+        from zenmetabot.gui import launch_gui
         launch_gui()

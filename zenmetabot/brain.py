@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import google.generativeai as genai
 
-from zenxyt.config import CFG, log
+from zenmetabot.config import CFG, log
 
 BRAIN_PROMPT = """
 You are a highly advanced Video Intelligence AI. 

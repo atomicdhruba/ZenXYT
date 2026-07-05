@@ -6,18 +6,18 @@ import urllib.request
 from PIL import Image
 from pathlib import Path
 
-from zenxyt.config import CFG, log
-from zenxyt.youtube import get_youtube_client
-from zenxyt.orchestrator import process_single_video
-from zenxyt.progress import progress
+from zenmetabot.config import CFG, log
+from zenmetabot.youtube import get_youtube_client
+from zenmetabot.orchestrator import process_single_video
+from zenmetabot.progress import progress
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
-class ZenXYTApp(ctk.CTk):
+class Zen MetaBotApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("ZenXYT Bot v2.0 - Multi-AI Debate Engine")
+        self.title("Zen MetaBot Bot v2.0 - Multi-AI Debate Engine")
         self.geometry("1100x700")
 
         self.videos = []
@@ -266,7 +266,7 @@ class ZenXYTApp(ctk.CTk):
         self.lbl_status.configure(text=f"Status: Finished. ({success_count}/{total} successful)")
 
 def launch_gui():
-    app = ZenXYTApp()
+    app = Zen MetaBotApp()
     app.mainloop()
 
 if __name__ == "__main__":

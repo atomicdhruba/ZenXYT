@@ -8,8 +8,8 @@ from google.auth.exceptions import RefreshError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from zenxyt.config import CFG, log
-from zenxyt.models import VideoMeta
+from zenmetabot.config import CFG, log
+from zenmetabot.models import VideoMeta
 
 def _iso_duration_to_seconds(duration: str) -> int:
     parts = {"H": 3600, "M": 60, "S": 1}

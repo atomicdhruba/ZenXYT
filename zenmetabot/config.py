@@ -62,4 +62,4 @@ class Config:
         )
 
 CFG = Config()
-log = logging.getLogger("zenxveda")
+log = logging.getLogger("zenmetabot")

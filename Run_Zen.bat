@@ -1,5 +1,5 @@
 @echo off
-title ZenXYT Master Bot v2.0
+title Zen MetaBot Master Bot v2.0
 color 0B
 
 echo ==========================================

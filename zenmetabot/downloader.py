@@ -1,6 +1,6 @@
 import yt_dlp
 from pathlib import Path
-from zenxyt.config import CFG, log
+from zenmetabot.config import CFG, log
 
 def download_video(video_id: str) -> str:
     """

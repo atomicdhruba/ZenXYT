@@ -1,10 +1,10 @@
 import google.generativeai as genai
-from zenxyt.config import CFG, log
-from zenxyt.utils import extract_json
-from zenxyt.models import VideoMeta
+from zenmetabot.config import CFG, log
+from zenmetabot.utils import extract_json
+from zenmetabot.models import VideoMeta
 
 _GEMINI_SYSTEM_PROMPT = """\
-You are an expert YouTube strategist for the channel ZenXYT (Minecraft content).
+You are an expert YouTube strategist for the channel Zen MetaBot (Minecraft content).
 I am providing you with the BRAIN file of a video, containing every detail you need.
 
 OUTPUT RULES — follow every one, no exceptions:
@@ -26,7 +26,7 @@ Description sections — join every section with \\n\\n:
 3. One highly specific comment-driving question
 4. Subscribe for more epic Minecraft moments 🚀
 5. 10-15 hashtags separated by spaces
-6. | ZenXYT\\nFollow for daily Minecraft videos 👀
+6. | Zen MetaBot\\nFollow for daily Minecraft videos 👀
 """
 
 def generate_metadata_gemini(video: VideoMeta, brain_text: str) -> dict:

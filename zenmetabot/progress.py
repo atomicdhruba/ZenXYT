@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from zenxyt.config import CFG, log
+from zenmetabot.config import CFG, log
 
 class ProgressLog:
     def __init__(self, path: str):

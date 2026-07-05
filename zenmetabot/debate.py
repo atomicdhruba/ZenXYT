@@ -1,13 +1,13 @@
 import json
-from zenxyt.config import CFG, log
-from zenxyt.models import VideoMeta
-from zenxyt.ai_nvidia import generate_metadata_nvidia
-from zenxyt.ai_gemini import generate_metadata_gemini
+from zenmetabot.config import CFG, log
+from zenmetabot.models import VideoMeta
+from zenmetabot.ai_nvidia import generate_metadata_nvidia
+from zenmetabot.ai_gemini import generate_metadata_gemini
 import google.generativeai as genai
-from zenxyt.utils import extract_json
+from zenmetabot.utils import extract_json
 
 _JUDGE_PROMPT = """\
-You are the Ultimate SEO Judge for the ZenXYT YouTube channel (Minecraft content).
+You are the Ultimate SEO Judge for the Zen MetaBot YouTube channel (Minecraft content).
 You will receive:
 1. The original video title.
 2. A Draft from NVIDIA.

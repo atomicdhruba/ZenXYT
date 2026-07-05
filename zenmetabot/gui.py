@@ -17,26 +17,87 @@ ctk.set_default_color_theme("blue")
 class ZenMetaBotApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Zen MetaBot v2.0 - Multi-AI Debate Engine")
-        self.geometry("1100x700")
+        self.title("Zen MetaBot v2.0 - Ultimate AI Dashboard")
+        self.geometry("1200x750")
+        
+        # --- Premium Palette ---
+        self.C_ACCENT = "#00E5FF" # Electric Cyan
+        self.C_HOVER  = "#00B8D4"
+        self.C_BG     = "#0F1015" # Deep Dark Space
+        self.C_CARD   = "#16181F" # Slightly lighter card
+        self.C_GREEN  = "#00E676"
+        self.C_RED    = "#FF1744"
 
+        self.configure(fg_color=self.C_BG)
+        
         self.videos = []
         self.selection_vars = []
         self.is_running = False
         self.stop_requested = False
         self.all_selected = True
 
-        # Create Tabview
-        self.tabview = ctk.CTkTabview(self, width=1050, height=650)
-        self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
+        # Grid Layout 1x2
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
-        self.tab_dash = self.tabview.add("📋 Dashboard")
-        self.tab_debate = self.tabview.add("⚔️ Debate Viewer")
-        self.tab_settings = self.tabview.add("⚙️ Settings")
+        # 1. SIDEBAR
+        self.sidebar_frame = ctk.CTkFrame(self, width=220, corner_radius=0, fg_color="#12131A")
+        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Zen MetaBot", font=ctk.CTkFont(size=24, weight="bold"), text_color=self.C_ACCENT)
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 40))
+
+        # Navigation Buttons
+        self.btn_nav_dash = ctk.CTkButton(self.sidebar_frame, corner_radius=8, height=40, border_spacing=10, text="📋 Dashboard",
+                                        fg_color="transparent", text_color="gray90", hover_color="#2A2D3A", anchor="w",
+                                        font=ctk.CTkFont(size=14, weight="bold"), command=self.show_dashboard)
+        self.btn_nav_dash.grid(row=1, column=0, sticky="ew", padx=15, pady=5)
+        
+        self.btn_nav_debate = ctk.CTkButton(self.sidebar_frame, corner_radius=8, height=40, border_spacing=10, text="⚔️ Debate Viewer",
+                                        fg_color="transparent", text_color="gray90", hover_color="#2A2D3A", anchor="w",
+                                        font=ctk.CTkFont(size=14, weight="bold"), command=self.show_debate)
+        self.btn_nav_debate.grid(row=2, column=0, sticky="ew", padx=15, pady=5)
+        
+        self.btn_nav_settings = ctk.CTkButton(self.sidebar_frame, corner_radius=8, height=40, border_spacing=10, text="⚙️ Settings",
+                                        fg_color="transparent", text_color="gray90", hover_color="#2A2D3A", anchor="w",
+                                        font=ctk.CTkFont(size=14, weight="bold"), command=self.show_settings)
+        self.btn_nav_settings.grid(row=3, column=0, sticky="ew", padx=15, pady=5)
+
+        # 2. MAIN CONTAINER
+        self.main_container = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.main_container.grid(row=0, column=1, sticky="nsew")
+        self.main_container.grid_rowconfigure(0, weight=1)
+        self.main_container.grid_columnconfigure(0, weight=1)
+        
+        # Define Pages
+        self.tab_dash = ctk.CTkFrame(self.main_container, corner_radius=0, fg_color="transparent")
+        self.tab_debate = ctk.CTkFrame(self.main_container, corner_radius=0, fg_color="transparent")
+        self.tab_settings = ctk.CTkFrame(self.main_container, corner_radius=0, fg_color="transparent")
 
         self.build_settings_tab()
         self.build_dashboard_tab()
         self.build_debate_tab()
+        
+        self.show_dashboard()
+
+    def select_frame_by_name(self, name):
+        self.btn_nav_dash.configure(fg_color=("gray75", "gray25") if name == "dash" else "transparent")
+        self.btn_nav_debate.configure(fg_color=("gray75", "gray25") if name == "debate" else "transparent")
+        self.btn_nav_settings.configure(fg_color=("gray75", "gray25") if name == "settings" else "transparent")
+        
+        if name == "dash": self.tab_dash.grid(row=0, column=0, sticky="nsew")
+        else: self.tab_dash.grid_forget()
+            
+        if name == "debate": self.tab_debate.grid(row=0, column=0, sticky="nsew")
+        else: self.tab_debate.grid_forget()
+            
+        if name == "settings": self.tab_settings.grid(row=0, column=0, sticky="nsew")
+        else: self.tab_settings.grid_forget()
+
+    def show_dashboard(self): self.select_frame_by_name("dash")
+    def show_debate(self): self.select_frame_by_name("debate")
+    def show_settings(self): self.select_frame_by_name("settings")
 
     def build_settings_tab(self):
         frame = ctk.CTkScrollableFrame(self.tab_settings)
@@ -74,7 +135,7 @@ class ZenMetaBotApp(ctk.CTk):
         ctk.CTkRadioButton(frame, text="Auto Generate & Deploy", variable=self.deploy_var, value="auto").pack(anchor="w", pady=5)
         ctk.CTkRadioButton(frame, text="Recheck & Edit before Deploy", variable=self.deploy_var, value="manual").pack(anchor="w", pady=5)
 
-        ctk.CTkButton(frame, text="💾 Save to .env", command=self.save_settings, fg_color="green").pack(anchor="w", pady=30)
+        ctk.CTkButton(frame, text="💾 Save to .env", command=self.save_settings, fg_color=self.C_GREEN, hover_color="#00C853", text_color="black", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=30)
 
     def save_settings(self):
         env_path = Path(".env")
@@ -112,27 +173,27 @@ class ZenMetaBotApp(ctk.CTk):
     def build_dashboard_tab(self):
         # Top bar
         top_bar = ctk.CTkFrame(self.tab_dash, fg_color="transparent")
-        top_bar.pack(fill="x", padx=10, pady=10)
+        top_bar.pack(fill="x", padx=20, pady=(20, 10))
 
-        ctk.CTkButton(top_bar, text="🔄 Fetch Videos", command=self.fetch_videos_thread).pack(side="left", padx=5)
+        ctk.CTkButton(top_bar, text="🔄 Fetch Videos", command=self.fetch_videos_thread, font=ctk.CTkFont(weight="bold"), fg_color="#2A2D3A", hover_color="#3A3D4A").pack(side="left", padx=(0, 10))
         self.btn_select_all = ctk.CTkButton(top_bar, text="☑ Select All", command=self.toggle_select_all, state="disabled", fg_color="gray", width=100)
-        self.btn_select_all.pack(side="left", padx=5)
-        self.btn_start = ctk.CTkButton(top_bar, text="▶ Start Processing", command=self.start_processing, fg_color="green", state="disabled")
-        self.btn_start.pack(side="left", padx=5)
-        self.btn_stop = ctk.CTkButton(top_bar, text="⏹ Stop", command=self.stop_processing, fg_color="red", state="disabled")
-        self.btn_stop.pack(side="left", padx=5)
+        self.btn_select_all.pack(side="left", padx=10)
+        self.btn_start = ctk.CTkButton(top_bar, text="▶ Start Processing", command=self.start_processing, fg_color=self.C_GREEN, hover_color="#00C853", text_color="black", font=ctk.CTkFont(weight="bold"), state="disabled")
+        self.btn_start.pack(side="left", padx=10)
+        self.btn_stop = ctk.CTkButton(top_bar, text="⏹ Stop", command=self.stop_processing, fg_color=self.C_RED, hover_color="#D50000", font=ctk.CTkFont(weight="bold"), state="disabled")
+        self.btn_stop.pack(side="left", padx=10)
         
-        self.lbl_status = ctk.CTkLabel(top_bar, text="Status: Idle", font=("Arial", 12, "italic"))
+        self.lbl_status = ctk.CTkLabel(top_bar, text="Status: Idle", font=ctk.CTkFont(size=13, slant="italic"), text_color=self.C_ACCENT)
         self.lbl_status.pack(side="right", padx=10)
+
+        # Progress
+        self.prog_bar = ctk.CTkProgressBar(self.tab_dash, progress_color=self.C_ACCENT, height=8)
+        self.prog_bar.pack(fill="x", padx=20, pady=(0, 15))
+        self.prog_bar.set(0)
 
         # Video List area
         self.scroll_frame = ctk.CTkScrollableFrame(self.tab_dash, fg_color="transparent")
-        self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Progress
-        self.prog_bar = ctk.CTkProgressBar(self.tab_dash)
-        self.prog_bar.pack(fill="x", padx=10, pady=(0, 10))
-        self.prog_bar.set(0)
+        self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=0)
 
     def toggle_select_all(self):
         self.all_selected = not self.all_selected
@@ -141,8 +202,8 @@ class ZenMetaBotApp(ctk.CTk):
         self.btn_select_all.configure(text="☑ Deselect All" if self.all_selected else "☑ Select All")
 
     def build_debate_tab(self):
-        self.debate_log = ctk.CTkTextbox(self.tab_debate, state="normal", wrap="word", font=("Consolas", 13))
-        self.debate_log.pack(fill="both", expand=True, padx=10, pady=10)
+        self.debate_log = ctk.CTkTextbox(self.tab_debate, state="normal", wrap="word", font=("Consolas", 13), fg_color="#181A20", text_color="#E0E0E0")
+        self.debate_log.pack(fill="both", expand=True, padx=20, pady=20)
         self.debate_log.configure(state="disabled")
 
     def log_debate(self, text):
@@ -195,36 +256,36 @@ class ZenMetaBotApp(ctk.CTk):
             var = ctk.BooleanVar(value=True)
             self.selection_vars.append(var)
             
-            card = ctk.CTkFrame(self.scroll_frame, fg_color="#1E1E1E", corner_radius=10)
-            card.pack(fill="x", padx=5, pady=5)
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=self.C_CARD, corner_radius=12, border_width=1, border_color="#2A2D3A")
+            card.pack(fill="x", padx=10, pady=8)
             
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x")
             
-            cb = ctk.CTkCheckBox(top_row, text="", variable=var, width=30)
-            cb.pack(side="left", padx=10)
+            cb = ctk.CTkCheckBox(top_row, text="", variable=var, width=30, fg_color=self.C_ACCENT, hover_color=self.C_HOVER)
+            cb.pack(side="left", padx=15)
             
             # Fetch and display thumbnail
             thumb_img = self.get_thumbnail(v.id)
             if thumb_img:
                 lbl_img = ctk.CTkLabel(top_row, text="", image=thumb_img)
-                lbl_img.pack(side="left", padx=10, pady=10)
+                lbl_img.pack(side="left", padx=(0,15), pady=15)
                 
             # Details frame
             details = ctk.CTkFrame(top_row, fg_color="transparent")
-            details.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+            details.pack(side="left", fill="both", expand=True, padx=(0,15), pady=15)
             
-            lbl_title = ctk.CTkLabel(details, text=v.old_title, font=("Arial", 14, "bold"), anchor="w")
-            lbl_title.pack(fill="x")
+            lbl_title = ctk.CTkLabel(details, text=v.old_title, font=ctk.CTkFont(size=15, weight="bold"), anchor="w", text_color="gray95")
+            lbl_title.pack(fill="x", pady=(0, 5))
             
             vtype = "Short" if v.duration_s <= CFG.MAX_DURATION_S else "Long"
             done_text = "✅ Processed" if progress.is_done(v.id) else "⏳ Pending"
             info_text = f"ID: {v.id}  •  {vtype}  •  {v.duration_s}s  •  {done_text}"
             
-            lbl_info = ctk.CTkLabel(details, text=info_text, font=("Arial", 12), text_color="gray", anchor="w")
+            lbl_info = ctk.CTkLabel(details, text=info_text, font=ctk.CTkFont(size=12), text_color="gray60", anchor="w")
             lbl_info.pack(fill="x")
             
-            review_panel = ctk.CTkFrame(card, fg_color="#2A2A2A", corner_radius=10)
+            review_panel = ctk.CTkFrame(card, fg_color="#1E2029", corner_radius=10, border_width=1, border_color=self.C_ACCENT)
             # Not packed yet
             
             self.card_labels[v.id] = {
@@ -387,8 +448,8 @@ class ZenMetaBotApp(ctk.CTk):
         btn_frame = ctk.CTkFrame(review_panel, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=(10,20))
         
-        ctk.CTkButton(btn_frame, text="✅ Approve & Deploy", command=on_approve, fg_color="green", width=150).pack(side="left", padx=5)
-        ctk.CTkButton(btn_frame, text="⏭️ Skip / Cancel", command=on_skip, fg_color="red", width=150).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="✅ Approve & Deploy", command=on_approve, fg_color=self.C_GREEN, hover_color="#00C853", text_color="black", font=ctk.CTkFont(weight="bold"), width=150).pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text="⏭️ Skip / Cancel", command=on_skip, fg_color=self.C_RED, hover_color="#D50000", font=ctk.CTkFont(weight="bold"), width=150).pack(side="right", padx=5)
 
 def launch_gui():
     app = ZenMetaBotApp()

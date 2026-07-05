@@ -79,14 +79,12 @@ def process_single_video(
 
             # 5. Manual Review (if enabled)
             if CFG.DEPLOY_MODE == "manual" and review_callback:
-                notify("  ⏸️ Manual Review enabled. Waiting for user approval...")
-                approved = review_callback(video)
-                if not approved:
-                    notify(f"[{index}/{total}] ⏭️ User skipped/aborted deployment for {video.id}.")
-                    return False
-                notify(f"  📝 Edited Title: {video.new_title}")
+                notify("  ⏸️ Manual Review enabled. Sending to UI for approval...")
+                review_callback(video)
+                notify(f"[{index}/{total}] ⏳  {video.id} generated and waiting for manual review.")
+                return True
 
-            # 6. Update YouTube
+            # 6. Update YouTube (Auto Deploy only)
             notify("  ✅ Updating YouTube metadata...")
             get_youtube_client().update_video(video)
             

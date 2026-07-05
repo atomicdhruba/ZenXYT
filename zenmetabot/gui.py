@@ -297,17 +297,11 @@ class ZenMetaBotApp(ctk.CTk):
         self.lbl_status.configure(text=f"Status: Finished. ({success_count}/{total} successful)")
 
     def manual_review_callback(self, video_meta):
-        # Called from background thread
-        event = threading.Event()
-        result = {"approved": False}
-        self.after(0, self.expand_card_for_review, video_meta, event, result)
-        event.wait()
-        return result["approved"]
+        # Called from background thread, just hand off to UI and immediately return
+        self.after(0, self.expand_card_for_review, video_meta)
 
-    def expand_card_for_review(self, video_meta, event, result):
+    def expand_card_for_review(self, video_meta):
         if video_meta.id not in self.card_labels:
-            result["approved"] = False
-            event.set()
             return
             
         lbl_dict = self.card_labels[video_meta.id]
@@ -365,13 +359,30 @@ class ZenMetaBotApp(ctk.CTk):
             video_meta.new_tags = [t.strip() for t in tags_var.get().split(",") if t.strip()]
             
             review_panel.pack_forget()
-            result["approved"] = True
-            event.set()
+            
+            def deploy_task():
+                try:
+                    self.log_debate(f"Uploading {video_meta.id} to YouTube...")
+                    get_youtube_client().update_video(video_meta)
+                    progress.mark_done(video_meta.id)
+                    
+                    def update_ui():
+                        lbl_title = lbl_dict["title"]
+                        lbl_info = lbl_dict["info"]
+                        lbl_title.configure(text=video_meta.new_title)
+                        current_info = lbl_info.cget("text")
+                        lbl_info.configure(text=current_info.replace("⏳ Pending", "✅ Processed"))
+                        self.log_debate(f"✅ {video_meta.id} fully updated on YouTube!")
+                        
+                    self.after(0, update_ui)
+                except Exception as e:
+                    self.log_debate(f"❌ Failed to upload {video_meta.id}: {e}")
+                    
+            threading.Thread(target=deploy_task, daemon=True).start()
             
         def on_skip():
             review_panel.pack_forget()
-            result["approved"] = False
-            event.set()
+            self.log_debate(f"⏭️ Skipped manual deployment for {video_meta.id}.")
             
         btn_frame = ctk.CTkFrame(review_panel, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=(10,20))

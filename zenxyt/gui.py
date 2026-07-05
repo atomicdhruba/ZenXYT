@@ -63,6 +63,11 @@ class ZenXYTApp(ctk.CTk):
         ctk.CTkRadioButton(frame, text="All Videos", variable=self.filter_var, value="all").pack(anchor="w", pady=5)
         ctk.CTkRadioButton(frame, text="Shorts Only", variable=self.filter_var, value="shorts").pack(anchor="w", pady=5)
         ctk.CTkRadioButton(frame, text="Longs Only", variable=self.filter_var, value="longs").pack(anchor="w", pady=5)
+        
+        ctk.CTkLabel(frame, text="Brain Extraction Mode", font=("Arial", 16, "bold")).pack(anchor="w", pady=(20,5))
+        self.rewatch_var = ctk.BooleanVar(value=CFG.FORCE_REWATCH)
+        ctk.CTkRadioButton(frame, text="Smart Meta (Use existing Brain)", variable=self.rewatch_var, value=False).pack(anchor="w", pady=5)
+        ctk.CTkRadioButton(frame, text="Force Rewatch (Extract new Brain)", variable=self.rewatch_var, value=True).pack(anchor="w", pady=5)
 
         ctk.CTkButton(frame, text="💾 Save to .env", command=self.save_settings, fg_color="green").pack(anchor="w", pady=30)
 
@@ -85,6 +90,7 @@ class ZenXYTApp(ctk.CTk):
         content = update_or_add("GEMINI_API_KEY", self.gem_api_var.get(), content)
         content = update_or_add("GENERATION_MODE", self.mode_var.get(), content)
         content = update_or_add("VIDEO_TYPE_FILTER", self.filter_var.get(), content)
+        content = update_or_add("FORCE_REWATCH", str(self.rewatch_var.get()).lower(), content)
 
         env_path.write_text(content)
         
@@ -92,6 +98,7 @@ class ZenXYTApp(ctk.CTk):
         CFG.GEMINI_API_KEY = self.gem_api_var.get()
         CFG.GENERATION_MODE = self.mode_var.get()
         CFG.VIDEO_TYPE_FILTER = self.filter_var.get()
+        CFG.FORCE_REWATCH = self.rewatch_var.get()
         
         self.log_debate("Settings saved successfully!")
 

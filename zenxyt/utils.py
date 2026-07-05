@@ -56,6 +56,10 @@ def extract_json(text: str) -> dict:
         return json.loads(candidate)
     except json.JSONDecodeError as e:
         candidate2 = re.sub(r'(?<!\\)\n', ' ', candidate)
+        # Fallback for Nemotron missing quotes around keys (e.g., {title:" -> {"title":")
+        candidate2 = re.sub(r'{\s*([a-zA-Z0-9_]+)\s*:', r'{"\1":', candidate2)
+        candidate2 = re.sub(r',\s*([a-zA-Z0-9_]+)\s*:', r',"\1":', candidate2)
+        
         try:
             return json.loads(candidate2)
         except json.JSONDecodeError:

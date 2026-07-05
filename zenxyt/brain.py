@@ -54,7 +54,7 @@ def extract_brain(video_id: str, video_path: str) -> str:
     """
     brain_file = Path(CFG.BRAIN_DIR) / f"{video_id}_brain.txt"
     
-    if brain_file.exists():
+    if not CFG.FORCE_REWATCH and brain_file.exists():
         log.info(f"  🧠 Brain file already exists for {video_id}. Skipping extraction.")
         return str(brain_file)
 

@@ -35,6 +35,7 @@ class Config:
     MAX_DURATION_S: int = int(os.environ.get("MAX_DURATION_SECONDS", "65"))
     VIDEO_FORMAT: str = os.environ.get("VIDEO_FORMAT", "worst[height<=360][ext=mp4]/worst[ext=mp4]/worst/best")
     SKIP_DONE: bool = os.environ.get("SKIP_DONE", "true").strip().lower() == "true"
+    FORCE_REWATCH: bool = os.environ.get("FORCE_REWATCH", "false").strip().lower() == "true"
     
     # ── PIPELINE & RETRY ────────────────────────────────
     MAX_RETRIES: int = int(os.environ.get("MAX_RETRIES", "3"))

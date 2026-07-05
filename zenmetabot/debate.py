@@ -40,7 +40,9 @@ def get_seo_score(metadata: dict) -> dict:
     genai.configure(api_key=CFG.GEMINI_API_KEY)
     model = genai.GenerativeModel(model_name=CFG.GEMINI_MODEL, system_instruction=_SCORE_PROMPT)
     prompt = f"Metadata to score:\nTitle: {metadata.get('title')}\nDescription: {metadata.get('description')}\nTags: {metadata.get('tags')}"
-    response = model.generate_content(
+    from zenmetabot.utils import call_gemini_with_retry
+    response = call_gemini_with_retry(
+        model.generate_content,
         prompt,
         generation_config=genai.types.GenerationConfig(temperature=0.1, response_mime_type="application/json")
     )
@@ -74,7 +76,8 @@ def run_debate(video: VideoMeta, brain_text: str, gui_callback=None) -> dict:
     
     user_prompt = f"Original Title: {video.old_title}\n\nNVIDIA Draft:\n{json.dumps(nvidia_draft, indent=2)}\n\nGemini Draft:\n{json.dumps(gemini_draft, indent=2)}"
     
-    response = model.generate_content(
+    response = call_gemini_with_retry(
+        model.generate_content,
         user_prompt,
         generation_config=genai.types.GenerationConfig(temperature=0.3, response_mime_type="application/json")
     )

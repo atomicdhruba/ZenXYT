@@ -40,7 +40,10 @@ def generate_metadata_gemini(video: VideoMeta, brain_text: str) -> dict:
     
     user_prompt = f"Original Title: {video.old_title}\n\nHere is the video BRAIN file:\n\n{brain_text}"
 
-    response = model.generate_content(
+    from zenmetabot.utils import call_gemini_with_retry
+    
+    response = call_gemini_with_retry(
+        model.generate_content,
         user_prompt,
         generation_config=genai.types.GenerationConfig(
             temperature=0.3,

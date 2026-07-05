@@ -1,5 +1,26 @@
 import json
 import re
+import time
+from zenmetabot.config import log
+
+def call_gemini_with_retry(func, *args, **kwargs):
+    """
+    Wraps a Gemini API call to automatically catch 429 Quota Exceeded errors
+    and sleep/retry, allowing the free tier to cool down without crashing.
+    """
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            error_str = str(e).lower()
+            if "429" in error_str or "quota" in error_str or "exhausted" in error_str or "503" in error_str:
+                sleep_time = 30 * (attempt + 1)
+                log.warning(f"  ⏳ Gemini API Quota/Limit hit! Sleeping {sleep_time}s before retrying (Attempt {attempt+1}/{max_retries})...")
+                time.sleep(sleep_time)
+            else:
+                raise e
+    raise RuntimeError("Exceeded maximum retries for Gemini API due to quota limits.")
 
 def _sanitise_json_string(raw: str) -> str:
     """

@@ -45,8 +45,14 @@ class ZenMetaBotApp(ctk.CTk):
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
 
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Zen MetaBot", font=ctk.CTkFont(size=24, weight="bold"), text_color=self.C_ACCENT)
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 40))
+        self.sidebar_header = ctk.CTkFrame(self.sidebar_frame, fg_color="transparent")
+        self.sidebar_header.grid(row=0, column=0, padx=20, pady=(30, 40))
+        
+        self.logo_label = ctk.CTkLabel(self.sidebar_header, text="Zen MetaBot", font=ctk.CTkFont(size=24, weight="bold"), text_color=self.C_ACCENT)
+        self.logo_label.pack()
+        
+        self.lbl_dot = ctk.CTkLabel(self.sidebar_header, text="🟢 Online", font=ctk.CTkFont(size=12), text_color="gray60")
+        self.lbl_dot.pack(pady=(5,0))
 
         # Navigation Buttons
         self.btn_nav_dash = ctk.CTkButton(self.sidebar_frame, corner_radius=8, height=40, border_spacing=10, text="📋 Dashboard",
@@ -186,6 +192,24 @@ class ZenMetaBotApp(ctk.CTk):
         self.lbl_status = ctk.CTkLabel(top_bar, text="Status: Idle", font=ctk.CTkFont(size=13, slant="italic"), text_color=self.C_ACCENT)
         self.lbl_status.pack(side="right", padx=10)
 
+        # Stat Cards
+        stats_frame = ctk.CTkFrame(self.tab_dash, fg_color="transparent")
+        stats_frame.pack(fill="x", padx=10, pady=(0, 20))
+        stats_frame.grid_columnconfigure((0,1,2), weight=1)
+        
+        def make_stat_card(parent, title, color, col):
+            card = ctk.CTkFrame(parent, fg_color="#1A1C23", corner_radius=12, border_width=1, border_color="#2A2D3A")
+            card.grid(row=0, column=col, sticky="ew", padx=10)
+            lbl_title = ctk.CTkLabel(card, text=title, font=ctk.CTkFont(size=13, weight="bold"), text_color="gray70")
+            lbl_title.pack(anchor="w", padx=15, pady=(15, 5))
+            lbl_val = ctk.CTkLabel(card, text="0", font=ctk.CTkFont(size=28, weight="bold"), text_color=color)
+            lbl_val.pack(anchor="w", padx=15, pady=(0, 15))
+            return lbl_val
+            
+        self.stat_total = make_stat_card(stats_frame, "Total Videos", self.C_ACCENT, 0)
+        self.stat_pending = make_stat_card(stats_frame, "Pending Review", "#FFD600", 1)
+        self.stat_done = make_stat_card(stats_frame, "Fully Deployed", self.C_GREEN, 2)
+
         # Progress
         self.prog_bar = ctk.CTkProgressBar(self.tab_dash, progress_color=self.C_ACCENT, height=8)
         self.prog_bar.pack(fill="x", padx=20, pady=(0, 15))
@@ -244,6 +268,15 @@ class ZenMetaBotApp(ctk.CTk):
             log.warning(f"Failed to fetch thumbnail for {video_id}: {e}")
             return None
 
+    def update_stats(self):
+        total = len(self.videos)
+        done = sum(1 for v in self.videos if progress.is_done(v.id))
+        pending = total - done
+        
+        self.stat_total.configure(text=str(total))
+        self.stat_done.configure(text=str(done))
+        self.stat_pending.configure(text=str(pending))
+
     def update_listbox(self):
         # Clear existing
         for widget in self.scroll_frame.winfo_children():
@@ -258,6 +291,11 @@ class ZenMetaBotApp(ctk.CTk):
             
             card = ctk.CTkFrame(self.scroll_frame, fg_color=self.C_CARD, corner_radius=12, border_width=1, border_color="#2A2D3A")
             card.pack(fill="x", padx=10, pady=8)
+            
+            def on_enter(e, c=card): c.configure(fg_color="#222530", border_color=self.C_ACCENT)
+            def on_leave(e, c=card): c.configure(fg_color=self.C_CARD, border_color="#2A2D3A")
+            card.bind("<Enter>", on_enter)
+            card.bind("<Leave>", on_leave)
             
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x")
@@ -294,6 +332,17 @@ class ZenMetaBotApp(ctk.CTk):
                 "review_panel": review_panel,
                 "card": card
             }
+            
+            def bind_hover(w):
+                w.bind("<Enter>", on_enter)
+                w.bind("<Leave>", on_leave)
+                for child in w.winfo_children():
+                    # Checkboxes and buttons have their own hover
+                    if not isinstance(child, (ctk.CTkCheckBox, ctk.CTkButton, ctk.CTkTextbox)):
+                        bind_hover(child)
+            bind_hover(card)
+            
+        self.update_stats()
 
     def start_processing(self):
         if not self.videos:
@@ -348,6 +397,8 @@ class ZenMetaBotApp(ctk.CTk):
                     current_info = lbl_info.cget("text")
                     lbl_info.configure(text=current_info.replace("⏳ Pending", "✅ Processed"))
                     
+            self.update_stats()
+            
             if i < total and not self.stop_requested and not (CFG.SKIP_DONE and progress.is_done(v.id)):
                 self.log_debate(f"  [Waiting {CFG.INTER_VIDEO_S}s for rate limits...]")
                 time.sleep(CFG.INTER_VIDEO_S)
@@ -367,12 +418,23 @@ class ZenMetaBotApp(ctk.CTk):
             
         lbl_dict = self.card_labels[video_meta.id]
         review_panel = lbl_dict["review_panel"]
+        review_panel.pack(fill="x", padx=10, pady=(0,10))
         
+        # Clear existing
         for widget in review_panel.winfo_children():
             widget.destroy()
             
-        review_panel.pack(fill="x", padx=10, pady=10)
+        # Title
+        ctk.CTkLabel(review_panel, text="Review & Edit AI Drafts", font=ctk.CTkFont(size=16, weight="bold"), text_color="white").pack(pady=(15,5))
         
+        # SEO Badge
+        score = video_meta.seo_score.get("total_score", 0) if getattr(video_meta, "seo_score", None) else 0
+        score_color = self.C_GREEN if score >= 80 else ("#FFD600" if score >= 60 else self.C_RED)
+        
+        badge_frame = ctk.CTkFrame(review_panel, fg_color=score_color, corner_radius=20)
+        badge_frame.pack(pady=(0, 10))
+        ctk.CTkLabel(badge_frame, text=f"🌟 SEO Score: {score}/100", text_color="black", font=ctk.CTkFont(weight="bold")).pack(padx=15, pady=2)
+
         options = []
         if video_meta.draft_debate: options.append("Debate Final")
         if video_meta.draft_gemini: options.append("Gemini")

@@ -198,17 +198,20 @@ class ZenMetaBotApp(ctk.CTk):
             card = ctk.CTkFrame(self.scroll_frame, fg_color="#1E1E1E", corner_radius=10)
             card.pack(fill="x", padx=5, pady=5)
             
-            cb = ctk.CTkCheckBox(card, text="", variable=var, width=30)
+            top_row = ctk.CTkFrame(card, fg_color="transparent")
+            top_row.pack(fill="x")
+            
+            cb = ctk.CTkCheckBox(top_row, text="", variable=var, width=30)
             cb.pack(side="left", padx=10)
             
             # Fetch and display thumbnail
             thumb_img = self.get_thumbnail(v.id)
             if thumb_img:
-                lbl_img = ctk.CTkLabel(card, text="", image=thumb_img)
+                lbl_img = ctk.CTkLabel(top_row, text="", image=thumb_img)
                 lbl_img.pack(side="left", padx=10, pady=10)
                 
             # Details frame
-            details = ctk.CTkFrame(card, fg_color="transparent")
+            details = ctk.CTkFrame(top_row, fg_color="transparent")
             details.pack(side="left", fill="both", expand=True, padx=10, pady=10)
             
             lbl_title = ctk.CTkLabel(details, text=v.old_title, font=("Arial", 14, "bold"), anchor="w")
@@ -221,7 +224,15 @@ class ZenMetaBotApp(ctk.CTk):
             lbl_info = ctk.CTkLabel(details, text=info_text, font=("Arial", 12), text_color="gray", anchor="w")
             lbl_info.pack(fill="x")
             
-            self.card_labels[v.id] = (lbl_title, lbl_info)
+            review_panel = ctk.CTkFrame(card, fg_color="#2A2A2A", corner_radius=10)
+            # Not packed yet
+            
+            self.card_labels[v.id] = {
+                "title": lbl_title,
+                "info": lbl_info,
+                "review_panel": review_panel,
+                "card": card
+            }
 
     def start_processing(self):
         if not self.videos:
@@ -267,7 +278,9 @@ class ZenMetaBotApp(ctk.CTk):
                 
             # Update the specific card visually
             if v.id in self.card_labels:
-                lbl_title, lbl_info = self.card_labels[v.id]
+                lbl_dict = self.card_labels[v.id]
+                lbl_title = lbl_dict["title"]
+                lbl_info = lbl_dict["info"]
                 display_title = v.new_title if getattr(v, "new_title", "") else v.old_title
                 lbl_title.configure(text=display_title)
                 if progress.is_done(v.id):
@@ -287,50 +300,84 @@ class ZenMetaBotApp(ctk.CTk):
         # Called from background thread
         event = threading.Event()
         result = {"approved": False}
-        self.after(0, self.show_review_dialog, video_meta, event, result)
+        self.after(0, self.expand_card_for_review, video_meta, event, result)
         event.wait()
         return result["approved"]
 
-    def show_review_dialog(self, video_meta, event, result):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title(f"Review Metadata: {video_meta.id}")
-        dialog.geometry("800x600")
-        dialog.grab_set() 
-        dialog.attributes("-topmost", True)
+    def expand_card_for_review(self, video_meta, event, result):
+        if video_meta.id not in self.card_labels:
+            result["approved"] = False
+            event.set()
+            return
+            
+        lbl_dict = self.card_labels[video_meta.id]
+        review_panel = lbl_dict["review_panel"]
         
-        ctk.CTkLabel(dialog, text="Title (Max 100 chars):", font=("Arial", 14, "bold")).pack(anchor="w", padx=20, pady=(20, 5))
-        title_var = ctk.StringVar(value=video_meta.new_title)
-        ctk.CTkEntry(dialog, textvariable=title_var, width=760).pack(padx=20)
+        for widget in review_panel.winfo_children():
+            widget.destroy()
+            
+        review_panel.pack(fill="x", padx=10, pady=10)
         
-        ctk.CTkLabel(dialog, text="Description:", font=("Arial", 14, "bold")).pack(anchor="w", padx=20, pady=(20, 5))
-        desc_box = ctk.CTkTextbox(dialog, width=760, height=250)
-        desc_box.pack(padx=20)
-        desc_box.insert("1.0", video_meta.new_desc)
+        options = []
+        if video_meta.draft_debate: options.append("Debate Final")
+        if video_meta.draft_gemini: options.append("Gemini")
+        if video_meta.draft_nvidia: options.append("NVIDIA")
+            
+        if not options: options.append("Current")
+            
+        title_var = ctk.StringVar()
+        tags_var = ctk.StringVar()
+        desc_box = ctk.CTkTextbox(review_panel, height=150)
         
-        ctk.CTkLabel(dialog, text="Tags (comma separated):", font=("Arial", 14, "bold")).pack(anchor="w", padx=20, pady=(20, 5))
-        tags_var = ctk.StringVar(value=", ".join(video_meta.new_tags))
-        ctk.CTkEntry(dialog, textvariable=tags_var, width=760).pack(padx=20)
+        def load_draft(draft_name):
+            d = {}
+            if draft_name == "Debate Final": d = video_meta.draft_debate
+            elif draft_name == "Gemini": d = video_meta.draft_gemini
+            elif draft_name == "NVIDIA": d = video_meta.draft_nvidia
+            
+            title_var.set(d.get("title", video_meta.new_title) or video_meta.new_title)
+            tags = d.get("tags", video_meta.new_tags) or video_meta.new_tags
+            if isinstance(tags, list): tags = ", ".join(tags)
+            tags_var.set(tags)
+            
+            desc_box.delete("1.0", "end")
+            desc_box.insert("1.0", d.get("description", video_meta.new_desc) or video_meta.new_desc)
+
+        if len(options) > 1:
+            seg_btn = ctk.CTkSegmentedButton(review_panel, values=options, command=load_draft)
+            seg_btn.pack(fill="x", padx=20, pady=(10, 5))
+            seg_btn.set(options[0])
+            
+        load_draft(options[0])
+        
+        ctk.CTkLabel(review_panel, text="Title:", font=("Arial", 12, "bold")).pack(anchor="w", padx=20)
+        ctk.CTkEntry(review_panel, textvariable=title_var).pack(fill="x", padx=20, pady=(0,10))
+        
+        ctk.CTkLabel(review_panel, text="Description:", font=("Arial", 12, "bold")).pack(anchor="w", padx=20)
+        desc_box.pack(fill="x", padx=20, pady=(0,10))
+        
+        ctk.CTkLabel(review_panel, text="Tags (comma separated):", font=("Arial", 12, "bold")).pack(anchor="w", padx=20)
+        ctk.CTkEntry(review_panel, textvariable=tags_var).pack(fill="x", padx=20, pady=(0,10))
         
         def on_approve():
             video_meta.new_title = title_var.get()
             video_meta.new_desc = desc_box.get("1.0", "end-1c")
             video_meta.new_tags = [t.strip() for t in tags_var.get().split(",") if t.strip()]
+            
+            review_panel.pack_forget()
             result["approved"] = True
             event.set()
-            dialog.destroy()
             
         def on_skip():
+            review_panel.pack_forget()
             result["approved"] = False
             event.set()
-            dialog.destroy()
-
-        dialog.protocol("WM_DELETE_WINDOW", on_skip)
+            
+        btn_frame = ctk.CTkFrame(review_panel, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=(10,20))
         
-        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
-        btn_frame.pack(fill="x", padx=20, pady=30)
-        
-        ctk.CTkButton(btn_frame, text="✅ Approve & Deploy", command=on_approve, fg_color="green", width=200).pack(side="left", padx=10)
-        ctk.CTkButton(btn_frame, text="⏭️ Skip / Cancel", command=on_skip, fg_color="red", width=200).pack(side="right", padx=10)
+        ctk.CTkButton(btn_frame, text="✅ Approve & Deploy", command=on_approve, fg_color="green", width=150).pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text="⏭️ Skip / Cancel", command=on_skip, fg_color="red", width=150).pack(side="right", padx=5)
 
 def launch_gui():
     app = ZenMetaBotApp()

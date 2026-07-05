@@ -10,3 +10,7 @@ class VideoMeta:
     new_desc: str = ""
     new_tags: list = field(default_factory=list)
     seo_score: dict = field(default_factory=dict)
+    
+    draft_nvidia: dict = field(default_factory=dict)
+    draft_gemini: dict = field(default_factory=dict)
+    draft_debate: dict = field(default_factory=dict)

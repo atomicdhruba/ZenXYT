@@ -52,16 +52,17 @@ def process_single_video(
             
             if mode == "nvidia":
                 meta = generate_metadata_nvidia(video, brain_text)
+                meta = {k.lower(): v for k, v in meta.items()}
+                video.draft_nvidia = meta
             elif mode == "gemini":
                 meta = generate_metadata_gemini(video, brain_text)
+                meta = {k.lower(): v for k, v in meta.items()}
+                video.draft_gemini = meta
             elif mode == "debate":
                 meta = run_debate(video, brain_text, gui_callback)
             else:
                 notify(f"Unknown mode '{mode}'. Defaulting to debate.")
                 meta = run_debate(video, brain_text, gui_callback)
-                
-            # Ensure keys are lowercase just in case the AI capitalized them
-            meta = {k.lower(): v for k, v in meta.items()}
             
             video.new_title = meta.get("title", video.old_title)
             video.new_desc  = meta.get("description", video.old_desc)

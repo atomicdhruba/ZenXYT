@@ -82,6 +82,12 @@ def run_debate(video: VideoMeta, brain_text: str, gui_callback=None) -> dict:
     )
     
     final_meta = extract_json(response.text)
+    final_meta = {k.lower(): v for k, v in final_meta.items()}
     notify("  🏆 Final Merge Completed.")
+    
+    # Attach drafts to video for the UI to display later
+    video.draft_nvidia = nvidia_draft
+    video.draft_gemini = gemini_draft
+    video.draft_debate = final_meta
     
     return final_meta

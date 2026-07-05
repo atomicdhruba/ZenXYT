@@ -33,7 +33,7 @@ class Config:
     GENERATION_MODE: str = os.environ.get("GENERATION_MODE", "debate").lower().strip()
     VIDEO_TYPE_FILTER: str = os.environ.get("VIDEO_TYPE_FILTER", "all").lower().strip()
     MAX_DURATION_S: int = int(os.environ.get("MAX_DURATION_SECONDS", "65"))
-    VIDEO_FORMAT: str = os.environ.get("VIDEO_FORMAT", "worst[height<=360][ext=mp4]/worst[ext=mp4]")
+    VIDEO_FORMAT: str = os.environ.get("VIDEO_FORMAT", "worst[height<=360][ext=mp4]/worst[ext=mp4]/worst/best")
     SKIP_DONE: bool = os.environ.get("SKIP_DONE", "true").strip().lower() == "true"
     
     # ── PIPELINE & RETRY ────────────────────────────────

@@ -263,11 +263,12 @@ class ZenMetaBotApp(ctk.CTk):
         self.debate_log.configure(state="disabled")
 
     def log_debate(self, text):
-        self.debate_log.configure(state="normal")
-        self.debate_log.insert("end", text + "\n")
-        self.debate_log.see("end")
-        self.debate_log.configure(state="disabled")
-        self.update()
+        def _log():
+            self.debate_log.configure(state="normal")
+            self.debate_log.insert("end", text + "\n")
+            self.debate_log.see("end")
+            self.debate_log.configure(state="disabled")
+        self.after(0, _log)
 
     def fetch_videos_thread(self):
         self.lbl_status.configure(text="Status: Fetching videos from YouTube...")
@@ -276,12 +277,15 @@ class ZenMetaBotApp(ctk.CTk):
 
     def _fetch_videos(self):
         try:
-            self.videos = get_youtube_client().get_videos()
-            self.lbl_status.configure(text=f"Status: Loaded {len(self.videos)} videos. Loading thumbnails...")
-            self.update_listbox()
-            self.lbl_status.configure(text=f"Status: Ready. ({len(self.videos)} videos found)")
-            self.btn_start.configure(state="normal")
-            self.btn_select_all.configure(state="normal")
+            videos = get_youtube_client().get_videos()
+            def update_ui():
+                self.videos = videos
+                self.lbl_status.configure(text=f"Status: Loaded {len(self.videos)} videos. Loading thumbnails...")
+                self.update_listbox()
+                self.lbl_status.configure(text=f"Status: Ready. ({len(self.videos)} videos found)")
+                self.btn_start.configure(state="normal")
+                self.btn_select_all.configure(state="normal")
+            self.after(0, update_ui)
         except Exception as e:
             err_str = str(e)
             if "SSL" in err_str or "wrong version number" in err_str.lower():
@@ -293,8 +297,10 @@ class ZenMetaBotApp(ctk.CTk):
                 )
             else:
                 msg = f"Fetch Error: {err_str}"
-            self.lbl_status.configure(text="Status: Fetch Failed (Network Issue)")
-            self.log_debate(msg)
+            def error_ui():
+                self.lbl_status.configure(text="Status: Fetch Failed (Network Issue)")
+                self.log_debate(msg)
+            self.after(0, error_ui)
 
     def get_thumbnail(self, video_id):
         try:
@@ -414,10 +420,12 @@ class ZenMetaBotApp(ctk.CTk):
         
         if total == 0:
             self.log_debate("\n❌ No videos selected for processing.")
-            self.is_running = False
-            self.btn_start.configure(state="normal")
-            self.btn_stop.configure(state="disabled")
-            self.lbl_status.configure(text="Status: Finished.")
+            def finish_empty():
+                self.is_running = False
+                self.btn_start.configure(state="normal")
+                self.btn_stop.configure(state="disabled")
+                self.lbl_status.configure(text="Status: Finished.")
+            self.after(0, finish_empty)
             return
 
         success_count = 0
@@ -426,7 +434,7 @@ class ZenMetaBotApp(ctk.CTk):
                 self.log_debate("\n⏹ Processing stopped by user.")
                 break
                 
-            self.prog_bar.set(i / total)
+            self.after(0, lambda p=i/total: self.prog_bar.set(p))
             
             ok = process_single_video(v, i, total, skip_done=CFG.SKIP_DONE, gui_callback=self.log_debate, review_callback=self.manual_review_callback)
             if ok:
@@ -434,29 +442,30 @@ class ZenMetaBotApp(ctk.CTk):
                 
             # Update the specific card visually
             if v.id in self.card_labels:
-                lbl_dict = self.card_labels[v.id]
-                lbl_title = lbl_dict["title"]
-                lbl_info = lbl_dict["info"]
-                display_title = v.new_title if getattr(v, "new_title", "") else v.old_title
-                lbl_title.configure(text=display_title)
-                if progress.is_done(v.id):
-                    current_info = lbl_info.cget("text")
-                    lbl_info.configure(text=current_info.replace("⏳ Pending", "✅ Processed"))
-                    
-            self.update_stats()
+                def update_card(vid=v):
+                    lbl_dict = self.card_labels[vid.id]
+                    display_title = getattr(vid, "new_title", "") or vid.old_title
+                    lbl_dict["title"].configure(text=display_title)
+                    if progress.is_done(vid.id):
+                        current_info = lbl_dict["info"].cget("text")
+                        lbl_dict["info"].configure(text=current_info.replace("⏳ Pending", "✅ Processed"))
+                    self.update_stats()
+                self.after(0, update_card)
             
             if i < total and not self.stop_requested and not (CFG.SKIP_DONE and progress.is_done(v.id)):
                 self.log_debate(f"  [Waiting {CFG.INTER_VIDEO_S}s for rate limits...]")
                 time.sleep(CFG.INTER_VIDEO_S)
                 
-        self.prog_bar.stop()
-        self.prog_bar.configure(mode="determinate")
-        self.prog_bar.set(1.0)
-        
-        self.is_running = False
-        self.btn_start.configure(state="normal")
-        self.btn_stop.configure(state="disabled")
-        self.lbl_status.configure(text=f"Status: Finished. ({success_count}/{total} successful)")
+        def finish_processing():
+            self.prog_bar.stop()
+            self.prog_bar.configure(mode="determinate")
+            self.prog_bar.set(1.0)
+            
+            self.is_running = False
+            self.btn_start.configure(state="normal")
+            self.btn_stop.configure(state="disabled")
+            self.lbl_status.configure(text=f"Status: Finished. ({success_count}/{total} successful)")
+        self.after(0, finish_processing)
 
     def manual_review_callback(self, video_meta):
         # Called from background thread, just hand off to UI and immediately return

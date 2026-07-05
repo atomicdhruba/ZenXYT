@@ -15,23 +15,12 @@ def download_video(video_id: str) -> str:
     # Format cascade: prefer low-res mp4; fall back to any mp4, then best available
     FORMAT = CFG.VIDEO_FORMAT
 
-    # Build client list based on what's available
-    clients = ["web"]
-    if not has_cookies:
-        clients += ["tv_embedded"]   # tv_embedded works without cookies
-    clients += ["mweb", "tv_embedded"]  # always keep as fallback
-
     base_opts = {
         "outtmpl": out,
         "format": FORMAT,
         "quiet": True,
         "no_warnings": False,
         "socket_timeout": 60,
-        "extractor_args": {
-            "youtube": {
-                "player_client": clients,
-            }
-        },
         "merge_output_format": "mp4",
         "postprocessors": [{
             "key": "FFmpegVideoConvertor",

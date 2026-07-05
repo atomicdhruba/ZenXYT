@@ -182,6 +182,7 @@ class ZenMetaBotApp(ctk.CTk):
             widget.destroy()
             
         self.selection_vars.clear()
+        self.card_labels = {}
 
         for v in self.videos:
             var = ctk.BooleanVar(value=True)
@@ -203,13 +204,17 @@ class ZenMetaBotApp(ctk.CTk):
             details = ctk.CTkFrame(card, fg_color="transparent")
             details.pack(side="left", fill="both", expand=True, padx=10, pady=10)
             
-            ctk.CTkLabel(details, text=v.old_title, font=("Arial", 14, "bold"), anchor="w").pack(fill="x")
+            lbl_title = ctk.CTkLabel(details, text=v.old_title, font=("Arial", 14, "bold"), anchor="w")
+            lbl_title.pack(fill="x")
             
             vtype = "Short" if v.duration_s <= CFG.MAX_DURATION_S else "Long"
             done_text = "✅ Processed" if progress.is_done(v.id) else "⏳ Pending"
             info_text = f"ID: {v.id}  •  {vtype}  •  {v.duration_s}s  •  {done_text}"
             
-            ctk.CTkLabel(details, text=info_text, font=("Arial", 12), text_color="gray", anchor="w").pack(fill="x")
+            lbl_info = ctk.CTkLabel(details, text=info_text, font=("Arial", 12), text_color="gray", anchor="w")
+            lbl_info.pack(fill="x")
+            
+            self.card_labels[v.id] = (lbl_title, lbl_info)
 
     def start_processing(self):
         if not self.videos:
@@ -253,9 +258,15 @@ class ZenMetaBotApp(ctk.CTk):
             if ok:
                 success_count += 1
                 
-            # Update the specific card visually if needed, but for now we just rely on the log
-            # Since thumbnails take time to fetch, we won't redraw the whole list here
-            
+            # Update the specific card visually
+            if v.id in self.card_labels:
+                lbl_title, lbl_info = self.card_labels[v.id]
+                display_title = v.new_title if getattr(v, "new_title", "") else v.old_title
+                lbl_title.configure(text=display_title)
+                if progress.is_done(v.id):
+                    current_info = lbl_info.cget("text")
+                    lbl_info.configure(text=current_info.replace("⏳ Pending", "✅ Processed"))
+                    
             if i < total and not self.stop_requested and not (CFG.SKIP_DONE and progress.is_done(v.id)):
                 self.log_debate(f"  [Waiting {CFG.INTER_VIDEO_S}s for rate limits...]")
                 time.sleep(CFG.INTER_VIDEO_S)

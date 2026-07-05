@@ -59,9 +59,15 @@ def process_single_video(
                 notify(f"Unknown mode '{mode}'. Defaulting to debate.")
                 meta = run_debate(video, brain_text, gui_callback)
                 
+            # Ensure keys are lowercase just in case the AI capitalized them
+            meta = {k.lower(): v for k, v in meta.items()}
+            
             video.new_title = meta.get("title", video.old_title)
             video.new_desc  = meta.get("description", video.old_desc)
             video.new_tags  = meta.get("tags", [])
+            
+            notify(f"  📝 New Title: {video.new_title}")
+            notify(f"  🏷️ New Tags: {', '.join(video.new_tags[:5])}...")
             
             # 4. SEO Score
             notify("  📊 Calculating SEO Virality Score...")

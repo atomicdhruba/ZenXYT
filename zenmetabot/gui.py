@@ -283,8 +283,18 @@ class ZenMetaBotApp(ctk.CTk):
             self.btn_start.configure(state="normal")
             self.btn_select_all.configure(state="normal")
         except Exception as e:
-            self.lbl_status.configure(text=f"Error: {e}")
-            self.log_debate(f"Fetch Error: {e}")
+            err_str = str(e)
+            if "SSL" in err_str or "wrong version number" in err_str.lower():
+                msg = (
+                    "Fetch Error: Network blocked by Antivirus, Firewall, or Proxy!\n"
+                    "Your computer's connection to YouTube is being intercepted. "
+                    "This isn't a feature we built, it's Python failing to connect to the internet.\n"
+                    "👉 Fix: Temporarily disable your VPN or Antivirus 'Web Shield', or check your proxy settings."
+                )
+            else:
+                msg = f"Fetch Error: {err_str}"
+            self.lbl_status.configure(text="Status: Fetch Failed (Network Issue)")
+            self.log_debate(msg)
 
     def get_thumbnail(self, video_id):
         try:

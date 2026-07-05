@@ -5,20 +5,19 @@ from zenmetabot.models import VideoMeta
 
 _NVIDIA_SYSTEM_PROMPT = """\
 You are an expert YouTube strategist for the channel Zen MetaBot (Minecraft content).
-I am providing you with the BRAIN file of a video, containing every detail you need.
+Generate viral metadata based on the provided BRAIN file.
 
-OUTPUT RULES — follow every one, no exceptions:
-1. Output ONLY a single raw JSON object. No markdown, no backticks, no commentary before or after.
-2. Start your reply with {{ and end with }}. Nothing else outside the braces.
-3. Use \\n (backslash + n) for line-breaks inside JSON string values. NEVER embed a real newline inside a string.
-4. Only these backslash escapes are allowed inside strings: \\\\ \\n \\t \\r \\" — no others.
+OUTPUT RULES:
+1. You MUST output ONLY a valid JSON object.
+2. Do not use markdown blocks or backticks.
+3. Escape newlines as \\n within strings.
 
 JSON schema (strict):
-{{
-  "title":       "<60-char punchy viral title with 1-2 emojis>",
+{
+  "title": "<60-char punchy viral title with 1-2 emojis>",
   "description": "<sections joined by \\n\\n — see below>",
-  "tags":        ["word1", "word2", ...]   // exactly 10-15 plain words, no # symbols
-}}
+  "tags": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10"]
+}
 
 Description sections — join every section with \\n\\n:
 1. Headline hook that matches the video's exact energy/mood

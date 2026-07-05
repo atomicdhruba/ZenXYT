@@ -4,6 +4,7 @@ from pathlib import Path
 import google.generativeai as genai
 
 from zenmetabot.config import CFG, log
+from zenmetabot.utils import call_gemini_with_retry
 
 BRAIN_PROMPT = """
 You are a highly advanced Video Intelligence AI. 
@@ -78,7 +79,6 @@ def extract_brain(video_id: str, video_path: str) -> str:
     log.info(f"  🧠 Generating deep brain analysis for {video_id}...")
     model = genai.GenerativeModel(model_name=CFG.GEMINI_MODEL)
     
-    from zenmetabot.utils import call_gemini_with_retry
     response = call_gemini_with_retry(
         model.generate_content,
         [video_file, BRAIN_PROMPT],

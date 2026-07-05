@@ -4,7 +4,7 @@ from zenmetabot.models import VideoMeta
 from zenmetabot.ai_nvidia import generate_metadata_nvidia
 from zenmetabot.ai_gemini import generate_metadata_gemini
 import google.generativeai as genai
-from zenmetabot.utils import extract_json
+from zenmetabot.utils import extract_json, call_gemini_with_retry
 
 _JUDGE_PROMPT = """\
 You are the Ultimate SEO Judge for the Zen MetaBot YouTube channel (Minecraft content).
@@ -40,7 +40,6 @@ def get_seo_score(metadata: dict) -> dict:
     genai.configure(api_key=CFG.GEMINI_API_KEY)
     model = genai.GenerativeModel(model_name=CFG.GEMINI_MODEL, system_instruction=_SCORE_PROMPT)
     prompt = f"Metadata to score:\nTitle: {metadata.get('title')}\nDescription: {metadata.get('description')}\nTags: {metadata.get('tags')}"
-    from zenmetabot.utils import call_gemini_with_retry
     response = call_gemini_with_retry(
         model.generate_content,
         prompt,

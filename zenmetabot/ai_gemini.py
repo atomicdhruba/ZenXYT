@@ -1,6 +1,6 @@
 import google.generativeai as genai
 from zenmetabot.config import CFG, log
-from zenmetabot.utils import extract_json
+from zenmetabot.utils import extract_json, call_gemini_with_retry
 from zenmetabot.models import VideoMeta
 
 _GEMINI_SYSTEM_PROMPT = """\
@@ -40,8 +40,6 @@ def generate_metadata_gemini(video: VideoMeta, brain_text: str) -> dict:
     
     user_prompt = f"Original Title: {video.old_title}\n\nHere is the video BRAIN file:\n\n{brain_text}"
 
-    from zenmetabot.utils import call_gemini_with_retry
-    
     response = call_gemini_with_retry(
         model.generate_content,
         user_prompt,

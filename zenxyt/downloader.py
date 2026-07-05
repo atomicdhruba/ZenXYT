@@ -21,11 +21,6 @@ def download_video(video_id: str) -> str:
         "quiet": True,
         "no_warnings": False,
         "socket_timeout": 60,
-        "merge_output_format": "mp4",
-        "postprocessors": [{
-            "key": "FFmpegVideoConvertor",
-            "preferedformat": "mp4",
-        }],
     }
 
     if has_cookies:

@@ -52,6 +52,34 @@ The system utilizes a multi-agent pipeline to process raw video files into highl
 | **Heuristic Scoring** | Built-in SEO grading algorithm (0–100) evaluating title CTR potential, tag relevance, and algorithmic hook. |
 | **Asynchronous UI** | CustomTkinter dark-mode desktop interface running completely decoupled from background API threads. |
 
+<br>
+
+<details>
+<summary><strong>[ Expand ] Project Structure</strong></summary>
+
+```text
+.
+├── bot.py                  # Main entry point (GUI or CLI daemon)
+├── requirements.txt        # Dependency locks
+├── .env.example            # Template for required environment variables
+│
+├── zenmetabot/             # Core Package
+│   ├── youtube.py          # YouTube Data API v3 integration layer
+│   ├── downloader.py       # Audio/Video multiplexer via yt-dlp
+│   ├── brain.py            # Multimodal extraction interface
+│   ├── ai_nvidia.py        # NVIDIA Nemotron inference client
+│   ├── ai_gemini.py        # Gemini inference client
+│   ├── debate.py           # Multi-agent synthesis and SEO grading
+│   ├── orchestrator.py     # Central pipeline controller
+│   ├── gui.py              # CustomTkinter interface rendering
+│   └── ...                 # Utilities & Configs
+│
+└── brain/                  # Local cache directory for extracted context
+```
+</details>
+
+---
+
 ## Quick Start
 
 To run this project locally, provision external API keys for the inference models and Google services.
@@ -76,6 +104,11 @@ GENERATION_MODE=debate
 
 ### YouTube OAuth Configuration (BYOK)
 
+<details>
+<summary><strong>[ Expand ] How to get your YouTube API key</strong></summary>
+
+<br>
+
 To avoid standard Google App Verification overhead, this repository uses a "Bring Your Own Key" (BYOK) model for YouTube authentication. Your tokens remain strictly local.
 
 1. Create a project in the Google Cloud Console.
@@ -85,6 +118,9 @@ To avoid standard Google App Verification overhead, this repository uses a "Brin
 5. Download the JSON credential file, rename it to `client_secrets.json`, and place it in the root of the repository.
 
 *On initial execution, a local server will spawn to handle the OAuth callback, generating a `token.pickle` file for subsequent headless runs.*
+</details>
+
+---
 
 ## Execution
 
